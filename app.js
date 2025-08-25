@@ -3106,19 +3106,8 @@ function findWinner() {
 }
 
 function updateParticipantsTable() {
-    // Get participants who joined during the registration period
-    // 25.08.2025 - 15.09.2025 is REGISTRATION period
-    // Each participant gets 14 days from their individual join date
-    const participants = users.filter(u => {
-        if (u.isAdmin) return false;
-        
-        // Check if user joined during the registration period
-        const joinDate = new Date(u.challengeJoinedAt || u.createdAt);
-        const challengeStart = new Date(challengeSettings.startDate);
-        const challengeEnd = new Date(challengeSettings.endDate);
-        
-        return joinDate >= challengeStart && joinDate <= challengeEnd;
-    });
+    // Get all non-admin users (new logic: show all registered participants)
+    const participants = users.filter(u => !u.isAdmin);
     
     const tbody = document.getElementById('participants-table');
     tbody.innerHTML = '';
@@ -3160,6 +3149,7 @@ function updateParticipantsTable() {
         
         return {
             ...user,
+            initialWeight: initialWeight, // Use calculated initialWeight
             currentWeight,
             weightChange,
             percentChange,
@@ -3171,8 +3161,20 @@ function updateParticipantsTable() {
         };
     });
     
-    // Sort by percent change (descending) by default
-    participantsData.sort((a, b) => b.percentChange - a.percentChange);
+    // Sort by status first, then by percent change
+    participantsData.sort((a, b) => {
+        // First sort by status priority
+        const statusPriority = { 'weight-submitted': 3, 'pending': 2, 'approved': 1 };
+        const aPriority = statusPriority[a.status] || 0;
+        const bPriority = statusPriority[b.status] || 0;
+        
+        if (aPriority !== bPriority) {
+            return bPriority - aPriority; // Higher priority first
+        }
+        
+        // Then sort by percent change
+        return b.percentChange - a.percentChange;
+    });
     
     participantsData.forEach((participant, index) => {
         const row = document.createElement('tr');
@@ -3185,13 +3187,13 @@ function updateParticipantsTable() {
         
         row.innerHTML = `
             <td><strong>${participant.username}</strong></td>
-            <td>${participant.initialWeight.toFixed(1)} кг</td>
-            <td>${participant.currentWeight.toFixed(1)} кг</td>
+            <td>${participant.initialWeight > 0 ? participant.initialWeight.toFixed(1) + ' кг' : 'Не указан'}</td>
+            <td>${participant.currentWeight > 0 ? participant.currentWeight.toFixed(1) + ' кг' : 'Не указан'}</td>
             <td class="${statusClass}">
-                ${participant.weightChange >= 0 ? '-' : '+'}${Math.abs(participant.weightChange).toFixed(1)} кг
+                ${participant.weightChange !== 0 ? (participant.weightChange >= 0 ? '-' : '+') + Math.abs(participant.weightChange).toFixed(1) + ' кг' : '0 кг'}
             </td>
             <td class="${statusClass}">
-                ${participant.percentChange >= 0 ? '-' : '+'}${Math.abs(participant.percentChange).toFixed(1)}%
+                ${participant.percentChange !== 0 ? (participant.percentChange >= 0 ? '-' : '+') + Math.abs(participant.percentChange).toFixed(1) + '%' : '0%'}
             </td>
             <td>${new Date(participant.lastUpdate).toLocaleDateString('ru-RU')}</td>
             <td>
