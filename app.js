@@ -1,3 +1,4 @@
+
 // Application State
 let currentUser = null;
 let users = [];
