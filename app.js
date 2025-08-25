@@ -3174,7 +3174,6 @@ function updateParticipantsTable() {
         
         return {
             ...user,
-            initialWeight: initialWeight, // Use calculated initialWeight
             currentWeight,
             weightChange,
             percentChange,
