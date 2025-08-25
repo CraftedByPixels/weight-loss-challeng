@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Челлендж снижения веса</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Login/Register Screen -->
+    <div id="auth-screen" class="screen">
+        <div class="container">
+            <div class="auth-container">
+                <div class="auth-header">
+                    <h1>Челлендж №1</h1>
+                    <p>Корпоративный вызов для здорового образа жизни</p>
+                    <div class="challenge-subtitle">
+                        <span class="challenge-period">Период регистрации: 25.08.2025 - 15.09.2025</span>
+                        <span class="challenge-duration-badge">Длительность: 14 дней</span>
+                    </div>
+                </div>
+
+                <!-- Login Form -->
+                <div id="login-form" class="auth-form">
+                    <h2>Вход в систему</h2>
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label for="login-username" class="form-label">Имя пользователя</label>
+                            <input type="text" id="login-username" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password" class="form-label">Пароль</label>
+                            <input type="password" id="login-password" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn--primary btn--full-width">Войти</button>
+                        <div id="login-error" class="error-message hidden"></div>
+                    </form>
+                    <p class="auth-switch">
+                        Нет аккаунта? <button type="button" id="show-register" class="link-btn">Зарегистрироваться</button>
+                    </p>
+                </div>
+
+                <!-- Register Form -->
+                <div id="register-form" class="auth-form hidden">
+                    <h2>Регистрация участника</h2>
+                    <form id="registerForm">
+                        <div class="form-group">
+                            <label for="register-username" class="form-label">Имя пользователя</label>
+                            <input type="text" id="register-username" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-password" class="form-label">Пароль</label>
+                            <input type="password" id="register-password" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-weight" class="form-label">Начальный вес (кг)</label>
+                            <input type="number" id="register-weight" class="form-control" step="0.1" min="30" max="300" required>
+                        </div>
+                        <button type="submit" class="btn btn--primary btn--full-width">Зарегистрироваться</button>
+                        <div id="register-error" class="error-message hidden"></div>
+                    </form>
+                    <p class="auth-switch">
+                        Уже есть аккаунт? <button type="button" id="show-login" class="link-btn">Войти</button>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Dashboard -->
+    <div id="user-screen" class="screen hidden">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="container">
+                <div class="header-content">
+                    <h1>Мой прогресс</h1>
+                    <div class="header-actions">
+                        <span id="current-user" class="user-info"></span>
+                        <div class="challenge-status-badge" id="user-challenge-status-badge"></div>
+                        <button id="logout-btn" class="btn btn--secondary btn--sm">Выйти</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="container">
+            <div class="dashboard">
+                <!-- Challenge Status for User -->
+                <div class="card">
+                    <div class="card__body">
+                        <div class="challenge-status-user">
+                            <div class="status-item">
+                                <h3>Статус челленджа</h3>
+                                <div class="status-value" id="user-challenge-status">Загрузка...</div>
+                            </div>
+                            <div class="status-item">
+                                <h3>Время до конца челленджа</h3>
+                                <div class="status-value" id="user-time-remaining">--</div>
+                            </div>
+                            <div class="status-item">
+                                <h3>Ваша позиция</h3>
+                                <div class="status-value" id="user-position">--</div>
+                            </div>
+                            <div class="status-item">
+                                <h3>Дней в челлендже</h3>
+                                <div class="status-value" id="user-days-in-challenge">--</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Challenge Description -->
+                <div class="card">
+                    <div class="card__body">
+                        <div class="challenge-description">
+                            <div class="description-header">
+                                <h2>🎯 Корпоративный челлендж по снижению веса</h2>
+                                <p class="description-subtitle">Присоединяйтесь к команде и достигайте результатов вместе!</p>
+                            </div>
+                            
+                            <div class="description-content">
+                                <div class="description-section">
+                                    <h3>📋 Правила челленджа</h3>
+                                    <ul class="rules-list">
+                                        <li><strong>Длительность:</strong> 14 дней с момента утверждения</li>
+                                        <li><strong>Период измерений:</strong> От начала до окончания челленджа</li>
+                                        <li><strong>Частота измерений:</strong> На усмотрение участника</li>
+                                        <li><strong>Точность:</strong> Используйте одинаковые весы</li>
+                                        <li><strong>Честность:</strong> Только реальные результаты</li>
+                                        <li><strong>Поддержка:</strong> Команда всегда рядом!</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="description-section">
+                                    <h3>🏆 Система достижений</h3>
+                                    <ul class="achievements-list">
+                                        <li><span class="achievement-icon">🥇</span> <strong>Золото:</strong> Снижение веса на 5%+</li>
+                                        <li><span class="achievement-icon">🥈</span> <strong>Серебро:</strong> Снижение веса на 3-4.9%</li>
+                                        <li><span class="achievement-icon">🥉</span> <strong>Бронза:</strong> Снижение веса на 1-2.9%</li>
+                                        <li><span class="achievement-icon">💪</span> <strong>Упорство:</strong> Ежедневные измерения</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="description-section">
+                                    <h3>💡 Советы для успеха</h3>
+                                    <ul class="tips-list">
+                                        <li>Пейте больше воды (2-3 литра в день)</li>
+                                        <li>Добавляйте больше овощей в рацион</li>
+                                        <li>Двигайтесь больше (10,000 шагов в день)</li>
+                                        <li>Высыпайтесь (7-8 часов)</li>
+                                        <li>Ведите дневник питания</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Storage Info -->
+                <div class="card">
+                    <div class="card__body">
+                        <div class="data-storage-info">
+                            <h3>💾 Информация о хранении данных</h3>
+                            <div class="storage-details">
+                                <div class="storage-item">
+                                    <span class="storage-icon">🔒</span>
+                                    <div class="storage-text">
+                                        <strong>Локальное хранение:</strong> Все данные сохраняются в вашем браузере
+                                    </div>
+                                </div>
+                                <div class="storage-item">
+                                    <span class="storage-icon">✅</span>
+                                    <div class="storage-text">
+                                        <strong>Безопасность:</strong> Данные не отправляются на внешние серверы
+                                    </div>
+                                </div>
+                                <div class="storage-item">
+                                    <span class="storage-icon">⚠️</span>
+                                    <div class="storage-text">
+                                        <strong>Важно:</strong> При смене браузера или очистке данных информация может потеряться
+                                    </div>
+                                </div>
+                                <div class="storage-item">
+                                    <span class="storage-icon">💡</span>
+                                    <div class="storage-text">
+                                        <strong>Рекомендация:</strong> Используйте один браузер для участия в челлендже
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="card stat-card">
+                        <div class="card__body">
+                            <h3>Начальный вес</h3>
+                            <div class="stat-value" id="initial-weight-display">-- кг</div>
+                        </div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="card__body">
+                            <h3>Текущий вес</h3>
+                            <div class="stat-value" id="current-weight-display">-- кг</div>
+                        </div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="card__body">
+                            <h3>Изменение в кг</h3>
+                            <div class="stat-value" id="weight-change-kg">-- кг</div>
+                        </div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="card__body">
+                            <h3>Изменение в %</h3>
+                            <div class="status-value" id="weight-change-percent">--%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Weight Form -->
+                <div class="card">
+                    <div class="card__body">
+                        <h3>Добавить измерение</h3>
+                        <form id="weight-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="new-weight" class="form-label">Текущий вес (кг)</label>
+                                    <input type="number" id="new-weight" class="form-control" step="0.1" min="30" max="300" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="weight-date" class="form-label">Дата измерения</label>
+                                    <input type="date" id="weight-date" class="form-control" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn--primary">Добавить измерение</button>
+                            <div id="weight-error" class="error-message hidden"></div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div class="charts-stack">
+                    <div class="card">
+                        <div class="card__body">
+                            <h3>Изменение веса во времени</h3>
+                            <div class="chart-container" style="position: relative; height: 400px;">
+                                <canvas id="weight-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card__body">
+                            <h3>Сравнение всех участников (анонимно)</h3>
+                            <div class="chart-container" style="position: relative; height: 400px;">
+                                <canvas id="all-participants-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weight History -->
+                <div class="card">
+                    <div class="card__body">
+                        <h3>История измерений</h3>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Дата</th>
+                                        <th>Вес (кг)</th>
+                                        <th>Изменение (кг)</th>
+                                        <th>Изменение (%)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="weight-history">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="admin-screen" class="screen hidden">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="container">
+                <div class="header-content">
+                    <h1>Панель администратора</h1>
+                    <div class="header-actions">
+                        <span id="admin-user" class="user-info"></span>
+                        <div class="challenge-status-badge" id="admin-challenge-status-badge"></div>
+                        <button id="admin-logout-btn" class="btn btn--secondary btn--sm">Выйти</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="container">
+            <div class="dashboard">
+                <!-- Challenge Info -->
+                <div class="card">
+                    <div class="card__body">
+                        <div class="challenge-info">
+                            <div class="info-item">
+                                <h3>Участников в челлендже</h3>
+                                <div class="info-value" id="participants-count">0</div>
+                            </div>
+                            <div class="info-item">
+                                <h3>Призовой фонд</h3>
+                                <div class="info-value" id="prize-fund">0 руб.</div>
+                            </div>
+                            <div class="info-item">
+                                <h3>Лидер челленджа</h3>
+                                <div class="info-value" id="current-winner">Пока нет данных</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Challenges Management -->
+                <div class="card">
+                    <div class="card__body">
+                        <div class="challenge-header">
+                            <div>
+                                <h3>Управление челленджами</h3>
+                                <p class="challenge-explanation">Здесь вы можете создавать и управлять челленджами. Период регистрации - это время, когда участники могут присоединиться. Длительность челленджа - это индивидуальное время участия для каждого участника.</p>
+                                
+                                <div class="challenge-info-box">
+                                    <h4>📋 Информация о челлендже</h4>
+                                    <div class="info-grid">
+                                        <div class="info-item">
+                                            <span class="info-label">🎯 Цель:</span>
+                                            <span class="info-value">Корпоративное снижение веса</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-label">⏱️ Длительность:</span>
+                                            <span class="info-value">14 дней для каждого участника</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-label">📊 Система:</span>
+                                            <span class="info-value">Ежедневные измерения веса</span>
+                                        </div>
+                                        <div class="info-item">
+                                            <span class="info-label">🏆 Мотивация:</span>
+                                            <span class="info-value">Соревнование и достижения</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" id="create-challenge" class="btn btn--primary">Создать челлендж</button>
+                        </div>
+                        
+                        <div class="challenges-list" id="challenges-list">
+                            <!-- Challenges will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Challenge Info -->
+                <div class="card">
+                    <div class="card__body">
+                        <h3>Текущий челлендж</h3>
+                        <div class="challenge-details">
+                            <div class="detail-item">
+                                <h4>Название</h4>
+                                <div class="detail-value" id="challenge-name">Челлендж №1</div>
+                            </div>
+                            <div class="detail-item">
+                                <h4>Период регистрации</h4>
+                                <div class="detail-value" id="challenge-period">25.08.2025 - 15.09.2025</div>
+                            </div>
+                            <div class="detail-item">
+                                <h4>Длительность челленджа</h4>
+                                <div class="detail-value" id="challenge-duration">14 дней</div>
+                            </div>
+                            <div class="detail-item">
+                                <h4>Статус регистрации</h4>
+                                <div class="detail-value" id="registration-status">Открыта</div>
+                            </div>
+                        </div>
+                        
+                        <div class="challenge-actions">
+                            <button type="button" id="export-results" class="btn btn--secondary">Экспорт результатов</button>
+                            <button type="button" id="reset-challenge" class="btn btn--outline">Сбросить челлендж</button>
+                            <button type="button" id="create-test-data" class="btn btn--success">Создать тестовые данные</button>
+                            <button type="button" id="clear-test-data" class="btn btn--warning">Очистить тестовые данные</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pending Participants for Approval -->
+                <div class="card">
+                    <div class="card__body">
+                        <h3>Участники, ожидающие утверждения</h3>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Имя участника</th>
+                                        <th>Начальный вес</th>
+                                        <th>Дата регистрации</th>
+                                        <th>Действия</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pending-participants-table">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Challenge Status -->
+                <div class="card">
+                    <div class="card__body">
+                        <div class="challenge-status">
+                            <div class="status-item">
+                                <h3>Статус челленджа</h3>
+                                <div class="status-value" id="challenge-status">Не настроен</div>
+                            </div>
+                            <div class="status-item">
+                                <h3>Время до конца челленджа</h3>
+                                <div class="status-value" id="time-remaining">--</div>
+                            </div>
+                            <div class="status-item">
+                                <h3>Время до конца регистрации</h3>
+                                <div class="status-value" id="registration-time-remaining">--</div>
+                            </div>
+                            <div class="status-item">
+                                <h3>Прогресс челленджа</h3>
+                                <div class="status-value" id="challenge-progress">--</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <!-- Participants Weight Charts -->
+                <div class="charts-stack">
+                    <div class="card">
+                        <div class="card__body">
+                            <h3>График веса всех участников</h3>
+                            <div class="chart-container" style="position: relative; height: 400px;">
+                                <canvas id="admin-weight-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="body">
+                            <h3>График изменения веса в % всех участников</h3>
+                            <div class="chart-container" style="position: relative; height: 400px;">
+                                <canvas id="admin-percentage-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Participants Table -->
+                <div class="card">
+                    <div class="card__body">
+                        <h3>Результаты участников</h3>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th class="sortable" data-sort="username">Участник ↕</th>
+                                        <th class="sortable" data-sort="initialWeight">Начальный вес ↕</th>
+                                        <th class="sortable" data-sort="currentWeight">Текущий вес ↕</th>
+                                        <th class="sortable" data-sort="weightChange">Изменение (кг) ↕</th>
+                                        <th class="sortable" data-sort="percentChange">Изменение (%) ↕</th>
+                                        <th class="sortable" data-sort="lastUpdate">Последнее обновление ↕</th>
+                                        <th>Статус</th>
+                                        <th class="sortable" data-sort="daysInChallenge">Дней в челлендже ↕</th>
+                                        <th class="sortable" data-sort="daysLeft">Осталось дней ↕</th>
+                                        <th class="sortable" data-sort="activityScore">Активность ↕</th>
+                                        <th>Действия</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="participants-table">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Challenge Creation Modal -->
+    <div id="challenge-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Создать новый челлендж</h3>
+                <button type="button" class="modal-close" id="close-challenge-modal">×</button>
+            </div>
+            <div class="modal-body">
+                <!-- Challenge Info Box -->
+                <div class="challenge-info-box-modal">
+                    <h4>🎯 О челлендже</h4>
+                    <div class="challenge-info-content">
+                        <p><strong>Корпоративный челлендж по снижению веса</strong> - это командное соревнование, где каждый участник:</p>
+                        <ul class="challenge-info-list">
+                            <li>🎯 <strong>Участвует 14 дней</strong> с момента утверждения</li>
+                            <li>📊 <strong>Вносит измерения веса</strong> на свое усмотрение</li>
+                            <li>🏆 <strong>Соревнуется</strong> с другими участниками</li>
+                            <li>💪 <strong>Достигает результатов</strong> в команде</li>
+                        </ul>
+                        <p class="challenge-note"><em>Участники могут присоединяться в течение периода регистрации и начинать свой 14-дневный челлендж в любое время.</em></p>
+                    </div>
+                </div>
+                
+                <form id="challenge-form">
+                    <div class="form-group">
+                        <label for="challenge-name-input" class="form-label">Название челленджа</label>
+                        <input type="text" id="challenge-name-input" class="form-control" required placeholder="Например: Челлендж №2">
+                    </div>
+                    <div class="form-group">
+                        <label for="challenge-description" class="form-label">Описание</label>
+                        <textarea id="challenge-description" class="form-control" rows="3" placeholder="Описание челленджа"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="challenge-start-input" class="form-label">Дата начала</label>
+                            <input type="date" id="challenge-start-input" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="challenge-end-input" class="form-label">Дата окончания</label>
+                            <input type="date" id="challenge-end-input" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="challenge-duration-input" class="form-label">Длительность (дней)</label>
+                        <input type="number" id="challenge-duration-input" class="form-control" min="1" max="365" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn--secondary" id="cancel-challenge">Отмена</button>
+                        <button type="submit" class="btn btn--primary">Создать челлендж</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
