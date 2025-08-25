@@ -527,6 +527,35 @@ pre code {
   background-color: var(--color-secondary);
 }
 
+/* Password Input Wrapper */
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.password-toggle:hover {
+  background-color: rgba(var(--color-slate-500-rgb), 0.1);
+}
+
+.eye-icon {
+  font-size: 16px;
+  color: var(--color-slate-500);
+}
+
 /* Form elements */
 .form-control {
   display: block;

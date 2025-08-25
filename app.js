@@ -13,6 +13,21 @@ let challengeSettings = {
     endDate: null
 };
 
+// Password toggle function
+function togglePassword(inputId) {
+    const input = document.getElementById(inputId);
+    const button = input.nextElementSibling;
+    const icon = button.querySelector('.eye-icon');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.textContent = '🙈';
+    } else {
+        input.type = 'password';
+        icon.textContent = '👁️';
+    }
+}
+
 // Initialize application
 document.addEventListener('DOMContentLoaded', function() {
     // Clear any incorrect challenge settings from localStorage first
