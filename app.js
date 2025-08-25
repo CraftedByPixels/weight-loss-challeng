@@ -2387,20 +2387,52 @@ function handleAddWeight(e) {
         // Update existing entry
         existingEntry.weight = weight;
     } else {
-        // Add new entry
-        const newWeighIn = {
-            id: nextWeighInId++,
-            userId: currentUser.id,
-            weight: weight,
-            date: date
-        };
-        weighIns.push(newWeighIn);
+        // Check if this is the first weight measurement and user needs approval
+        const isFirstMeasurement = weighIns.filter(w => w.userId === currentUser.id).length === 0;
+        const needsApproval = !currentUser.initialWeight || currentUser.status === 'pending';
+        
+        if (isFirstMeasurement && needsApproval) {
+            // This is the first weight - set it as initial and send for approval
+            currentUser.initialWeight = weight;
+            currentUser.status = 'weight-submitted';
+            
+            const newWeighIn = {
+                id: nextWeighInId++,
+                userId: currentUser.id,
+                weight: weight,
+                date: date,
+                isInitial: true,
+                note: 'Первое измерение - отправлено на утверждение'
+            };
+            weighIns.push(newWeighIn);
+            
+            // Save user data
+            saveData();
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            
+            // Show notification
+            showChallengeNotification('Вес отправлен на утверждение администратором!', 'success');
+            
+            // Update admin table if admin is viewing
+            if (window.updateParticipantsTable) {
+                updateParticipantsTable();
+            }
+        } else {
+            // Regular weight measurement
+            const newWeighIn = {
+                id: nextWeighInId++,
+                userId: currentUser.id,
+                weight: weight,
+                date: date
+            };
+            weighIns.push(newWeighIn);
+            
+            // Check for achievements
+            checkAchievements(currentUser.id, weight);
+        }
     }
     
     saveData();
-    
-    // Check for achievements
-    checkAchievements(currentUser.id, weight);
     
     // Update dashboard
     updateUserStats();
@@ -2413,13 +2445,6 @@ function handleAddWeight(e) {
     document.getElementById('weight-date').value = new Date().toISOString().split('T')[0];
     
     clearAuthErrors();
-    
-    // Show registration notification for admin
-    if (currentUser && !currentUser.isAdmin) {
-        setTimeout(() => {
-            showRegistrationNotification(currentUser.username);
-        }, 2000);
-    }
 }
 
 function checkAchievements(userId, newWeight) {
