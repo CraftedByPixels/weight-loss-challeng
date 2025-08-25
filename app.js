@@ -28,6 +28,36 @@ function togglePassword(inputId) {
     }
 }
 
+// Update initial weight button state
+function updateInitialWeightButton() {
+    if (!currentUser || currentUser.isAdmin) return;
+    
+    const submitBtn = document.getElementById('submit-initial-weight-btn');
+    const statusInfo = document.getElementById('weight-status-info');
+    
+    if (!submitBtn || !statusInfo) return;
+    
+    if (currentUser.status === 'weight-submitted') {
+        // Weight submitted for approval
+        submitBtn.style.display = 'none';
+        statusInfo.style.display = 'block';
+        statusInfo.innerHTML = '<span class="status-badge status--warning">⏳ Ожидает утверждения</span>';
+    } else if (currentUser.status === 'approved') {
+        // Weight approved
+        submitBtn.style.display = 'none';
+        statusInfo.style.display = 'block';
+        statusInfo.innerHTML = '<span class="status-badge status--success">✅ Вес утвержден</span>';
+    } else if (currentUser.status === 'pending' && weighIns.some(w => w.userId === currentUser.id)) {
+        // Has measurements but not submitted
+        submitBtn.style.display = 'inline-block';
+        statusInfo.style.display = 'none';
+    } else {
+        // No measurements yet
+        submitBtn.style.display = 'none';
+        statusInfo.style.display = 'none';
+    }
+}
+
 // Check if user should see weight input form
 function checkWeightInputForm() {
     if (!currentUser || currentUser.isAdmin) return;
@@ -40,6 +70,44 @@ function checkWeightInputForm() {
         document.getElementById('weight-input-form').classList.remove('hidden');
     } else {
         document.getElementById('weight-input-form').classList.add('hidden');
+    }
+}
+
+// Handle submit initial weight button click
+function handleSubmitInitialWeight() {
+    if (!currentUser || currentUser.isAdmin) return;
+    
+    // Check if user has weight measurements
+    const userWeighIns = weighIns.filter(w => w.userId === currentUser.id);
+    if (userWeighIns.length === 0) {
+        showChallengeNotification('Сначала добавьте измерение веса!', 'error');
+        return;
+    }
+    
+    // Get the first weight measurement
+    const firstWeighIn = userWeighIns.sort((a, b) => new Date(a.date) - new Date(b.date))[0];
+    
+    // Set initial weight and status
+    currentUser.initialWeight = firstWeighIn.weight;
+    currentUser.status = 'weight-submitted';
+    
+    // Mark first weigh-in as initial
+    firstWeighIn.isInitial = true;
+    firstWeighIn.note = 'Отправлено на утверждение';
+    
+    // Save data
+    saveData();
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    
+    // Update UI
+    updateInitialWeightButton();
+    
+    // Show success message
+    showChallengeNotification('Вес отправлен на утверждение администратором!', 'success');
+    
+    // Update admin table if admin is viewing
+    if (window.updateParticipantsTable) {
+        updateParticipantsTable();
     }
 }
 
@@ -1227,6 +1295,11 @@ function initializeEventListeners() {
         initialWeightForm.addEventListener('submit', handleInitialWeight);
     }
     
+    const submitInitialWeightBtn = document.getElementById('submit-initial-weight-btn');
+    if (submitInitialWeightBtn) {
+        submitInitialWeightBtn.addEventListener('click', handleSubmitInitialWeight);
+    }
+    
     // Logout buttons
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) {
@@ -1993,6 +2066,9 @@ function updateUserChallengeStatus() {
     
     // Check if weight input form should be shown
     checkWeightInputForm();
+    
+    // Update initial weight button state
+    updateInitialWeightButton();
 }
 
 // Calculate days since user joined the challenge
@@ -2123,6 +2199,9 @@ function updateUserStats() {
         changeKgElement.style.color = 'var(--color-text-secondary)';
         changePercentElement.style.color = 'var(--color-text-secondary)';
     }
+    
+    // Update initial weight button state
+    updateInitialWeightButton();
 }
 
 function updateUserCharts() {
@@ -3327,7 +3406,7 @@ function getParticipantStatusText(participant) {
     });
     
     if (participant.status === 'weight-submitted') return 'Ожидает утверждения веса';
-    if (participant.status === 'approved') return 'Активен';
+    if (participant.status === 'approved') return 'Участвует';
     if (participant.status === 'pending') return 'Ожидает утверждения';
     return 'Неизвестно';
 }
@@ -3356,6 +3435,39 @@ function fixExistingUserStatuses() {
     // Save fixed data
     saveData();
     console.log('🔧 User statuses fixed and saved');
+}
+
+// Clear all participants except admin
+function clearAllParticipants() {
+    console.log('🗑️ Clearing all participants except admin...');
+    
+    // Keep only admin users
+    const adminUsers = users.filter(u => u.isAdmin);
+    
+    // Clear all weigh-ins
+    weighIns.length = 0;
+    
+    // Reset counters
+    nextUserId = adminUsers.length + 1;
+    nextWeighInId = 1;
+    
+    // Replace users array with only admins
+    users.length = 0;
+    users.push(...adminUsers);
+    
+    // Save cleared data
+    saveData();
+    
+    console.log(`🗑️ Cleared all participants. Kept ${adminUsers.length} admin(s)`);
+    
+    // Update admin dashboard if admin is logged in
+    if (currentUser && currentUser.isAdmin) {
+        updateParticipantsTable();
+        updateAdminStats();
+    }
+    
+    // Show notification
+    showAdminNotification('Все участники удалены. Система готова к новым регистрациям.');
 }
 
 // Approve participant's weight and start their challenge

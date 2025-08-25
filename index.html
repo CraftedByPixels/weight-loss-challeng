@@ -234,6 +234,14 @@
                         <div class="card__body">
                             <h3>Начальный вес</h3>
                             <div class="stat-value" id="initial-weight-display">-- кг</div>
+                            <div class="stat-actions">
+                                <button type="button" id="submit-initial-weight-btn" class="btn btn--primary btn--sm" style="display: none;">
+                                    📤 Отправить на утверждение
+                                </button>
+                                <div id="weight-status-info" class="weight-status-info" style="display: none;">
+                                    <span class="status-badge status--info">Ожидает утверждения</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="card stat-card">
@@ -424,6 +432,7 @@
                         <div class="challenge-actions">
                             <button type="button" id="export-results" class="btn btn--secondary">Экспорт результатов</button>
                             <button type="button" id="reset-challenge" class="btn btn--outline">Сбросить челлендж</button>
+                            <button type="button" id="clear-all-participants" class="btn btn--error">🗑️ Удалить всех участников</button>
                             <button type="button" id="create-test-data" class="btn btn--success">Создать тестовые данные</button>
                             <button type="button" id="clear-test-data" class="btn btn--warning">Очистить тестовые данные</button>
                         </div>

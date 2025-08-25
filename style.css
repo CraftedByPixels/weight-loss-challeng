@@ -576,6 +576,44 @@ pre code {
   text-align: left;
 }
 
+/* Stat Actions */
+.stat-actions {
+  margin-top: var(--space-12);
+  text-align: center;
+}
+
+.weight-status-info {
+  margin-top: var(--space-8);
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-4) var(--space-8);
+  border-radius: var(--radius-full);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-sm);
+}
+
+/* Status Badge Colors */
+.status--warning {
+  background-color: rgba(var(--color-warning-rgb), 0.15);
+  color: var(--color-warning);
+  border: 1px solid rgba(var(--color-warning-rgb), 0.25);
+}
+
+.status--success {
+  background-color: rgba(var(--color-success-rgb), 0.15);
+  color: var(--color-success);
+  border: 1px solid rgba(var(--color-success-rgb), 0.25);
+}
+
+.status--info {
+  background-color: rgba(var(--color-info-rgb), 0.15);
+  color: var(--color-info);
+  border: 1px solid rgba(var(--color-info-rgb), 0.25);
+}
+
 /* Form elements */
 .form-control {
   display: block;
