@@ -90,6 +90,7 @@ document.addEventListener('DOMContentLoaded', function() {
     localStorage.removeItem('challengeSettings');
     
     initializeData();
+    fixExistingUserStatuses(); // Fix existing users without status
     initializeEventListeners();
     checkAuthentication();
     
@@ -3329,6 +3330,32 @@ function getParticipantStatusText(participant) {
     if (participant.status === 'approved') return 'Активен';
     if (participant.status === 'pending') return 'Ожидает утверждения';
     return 'Неизвестно';
+}
+
+// Fix existing users without status
+function fixExistingUserStatuses() {
+    console.log('🔧 Fixing existing user statuses...');
+    
+    users.forEach(user => {
+        if (user.isAdmin) return; // Skip admins
+        
+        // If user has no status, set it based on their data
+        if (!user.status) {
+            if (user.initialWeight) {
+                // User has weight but no status - they need approval
+                user.status = 'weight-submitted';
+                console.log(`🔧 Fixed ${user.username}: status set to 'weight-submitted'`);
+            } else {
+                // User has no weight - they are pending
+                user.status = 'pending';
+                console.log(`🔧 Fixed ${user.username}: status set to 'pending'`);
+            }
+        }
+    });
+    
+    // Save fixed data
+    saveData();
+    console.log('🔧 User statuses fixed and saved');
 }
 
 // Approve participant's weight and start their challenge
