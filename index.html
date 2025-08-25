@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -64,8 +65,8 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="register-weight" class="form-label">Начальный вес (кг)</label>
-                            <input type="number" id="register-weight" class="form-control" step="0.1" min="30" max="300" required>
+                            <label for="register-start-date" class="form-label">Желаемая дата начала челленджа</label>
+                            <input type="date" id="register-start-date" class="form-control" required>
                         </div>
                         <button type="submit" class="btn btn--primary btn--full-width">Зарегистрироваться</button>
                         <div id="register-error" class="error-message hidden"></div>
@@ -116,6 +117,28 @@
                                 <h3>Дней в челлендже</h3>
                                 <div class="status-value" id="user-days-in-challenge">--</div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weight Input Form for Challenge Start -->
+                <div id="weight-input-form" class="card hidden">
+                    <div class="card__body">
+                        <div class="weight-input-section">
+                            <h3>🎯 Введите начальный вес для начала челленджа</h3>
+                            <p class="weight-input-description">Сегодня день начала вашего челленджа! Введите текущий вес для старта.</p>
+                            
+                            <form id="initial-weight-form" class="weight-form">
+                                <div class="form-group">
+                                    <label for="initial-weight" class="form-label">Ваш текущий вес (кг)</label>
+                                    <input type="number" id="initial-weight" class="form-control" step="0.1" min="30" max="300" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="weight-note" class="form-label">Дополнительная информация (необязательно)</label>
+                                    <textarea id="weight-note" class="form-control" rows="3" placeholder="Например: время измерения, условия, особые обстоятельства..."></textarea>
+                                </div>
+                                <button type="submit" class="btn btn--primary btn--full-width">Отправить на утверждение</button>
+                            </form>
                         </div>
                     </div>
                 </div>

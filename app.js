@@ -28,6 +28,62 @@ function togglePassword(inputId) {
     }
 }
 
+// Check if user should see weight input form
+function checkWeightInputForm() {
+    if (!currentUser || currentUser.isAdmin) return;
+    
+    const today = new Date().toISOString().split('T')[0];
+    const userStartDate = currentUser.desiredStartDate;
+    
+    // Show form if today is the user's desired start date and they haven't submitted weight yet
+    if (userStartDate === today && !currentUser.initialWeight && currentUser.status === 'pending') {
+        document.getElementById('weight-input-form').classList.remove('hidden');
+    } else {
+        document.getElementById('weight-input-form').classList.add('hidden');
+    }
+}
+
+// Handle initial weight submission
+function handleInitialWeight(e) {
+    e.preventDefault();
+    const weight = parseFloat(document.getElementById('initial-weight').value);
+    const note = document.getElementById('weight-note').value.trim();
+    
+    if (!weight || weight < 30 || weight > 300) {
+        showChallengeNotification('Введите корректный вес (от 30 до 300 кг)', 'error');
+        return;
+    }
+    
+    // Update user with initial weight
+    currentUser.initialWeight = weight;
+    currentUser.challengeStartedAt = new Date().toISOString();
+    
+    // Add initial weight measurement
+    const initialWeighIn = {
+        id: nextWeighInId++,
+        userId: currentUser.id,
+        weight: weight,
+        date: new Date().toISOString().split('T')[0],
+        note: note,
+        isInitial: true
+    };
+    
+    weighIns.push(initialWeighIn);
+    
+    // Update user status to waiting for admin approval
+    currentUser.status = 'weight-submitted';
+    
+    saveData();
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    
+    // Hide the form and show success message
+    document.getElementById('weight-input-form').classList.add('hidden');
+    showChallengeNotification('Вес отправлен на утверждение администратором!', 'success');
+    
+    // Reset form
+    document.getElementById('initial-weight-form').reset();
+}
+
 // Initialize application
 document.addEventListener('DOMContentLoaded', function() {
     // Clear any incorrect challenge settings from localStorage first
@@ -1165,6 +1221,11 @@ function initializeEventListeners() {
         weightForm.addEventListener('submit', handleAddWeight);
     }
     
+    const initialWeightForm = document.getElementById('initial-weight-form');
+    if (initialWeightForm) {
+        initialWeightForm.addEventListener('submit', handleInitialWeight);
+    }
+    
     // Logout buttons
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) {
@@ -1311,7 +1372,7 @@ function handleRegister(e) {
     e.preventDefault();
     const username = document.getElementById('register-username').value.trim();
     const password = document.getElementById('register-password').value;
-    const initialWeight = parseFloat(document.getElementById('register-weight').value);
+    const startDate = document.getElementById('register-start-date').value;
     
     // Check if registration is open
     const registrationStatus = getRegistrationStatus();
@@ -1341,12 +1402,18 @@ function handleRegister(e) {
         return;
     }
     
+    if (!startDate) {
+        showAuthError('register', 'Выберите желаемую дату начала челленджа');
+        return;
+    }
+    
     // Create new user
     const newUser = {
         id: nextUserId++,
         username: username,
         password: password, // In real app, this would be hashed
-        initialWeight: initialWeight,
+        desiredStartDate: startDate,
+        initialWeight: null, // Will be set when challenge starts
         createdAt: new Date().toISOString().split('T')[0],
         challengeJoinedAt: null, // Will be set after admin approval
         challengeApprovedAt: null, // When admin approves
@@ -1355,17 +1422,6 @@ function handleRegister(e) {
     };
     
     users.push(newUser);
-    
-    // Add initial weight measurement
-    const initialWeighIn = {
-        id: nextWeighInId++,
-        userId: newUser.id,
-        weight: initialWeight,
-        date: newUser.createdAt
-    };
-    
-    weighIns.push(initialWeighIn);
-    
     saveData();
     
     // Auto-login new user
@@ -1373,22 +1429,10 @@ function handleRegister(e) {
     localStorage.setItem('currentUser', JSON.stringify(newUser));
     showUserDashboard();
     
-    // Check challenge status for new user
-    const status = getUserChallengeStatus(newUser.id);
-    if (status === 'finished') {
-        setTimeout(() => {
-            showChallengeNotification('Челлендж завершен! Результаты подведены.');
-        }, 1000);
-    } else if (status === 'not-started') {
-        setTimeout(() => {
-            showChallengeNotification('Челлендж еще не начался. Дождитесь старта.');
-        }, 1000);
-    } else if (status === 'active') {
-        setTimeout(() => {
-            const daysLeft = Math.ceil((new Date(challengeSettings.endDate) - new Date()) / (1000 * 60 * 60 * 24));
-            showChallengeNotification(`Добро пожаловать в активный челлендж! У вас ${daysLeft} дней для достижения цели!`);
-        }, 1000);
-    }
+    // Show notification
+    setTimeout(() => {
+        showChallengeNotification('Регистрация успешна! Ожидайте утверждения администратором.');
+    }, 1000);
     
     // Show registration notification for admin
     setTimeout(() => {
@@ -1945,6 +1989,9 @@ function updateUserChallengeStatus() {
         submitButton.textContent = 'Добавить измерение';
         inputs.forEach(input => input.disabled = false);
     }
+    
+    // Check if weight input form should be shown
+    checkWeightInputForm();
 }
 
 // Calculate days since user joined the challenge
@@ -2032,6 +2079,7 @@ function showUserDashboard() {
     updateUserCharts();
     updateWeightHistory();
     updateUserChallengeStatus();
+    checkWeightInputForm();
 }
 
 function showAdminDashboard() {
@@ -3147,8 +3195,8 @@ function updateParticipantsTable() {
             </td>
             <td>${new Date(participant.lastUpdate).toLocaleDateString('ru-RU')}</td>
             <td>
-                <span class="status ${participant.hasWeighIns ? 'status--success' : 'status--info'}">
-                    ${participant.hasWeighIns ? 'Активен' : 'Начальный вес'}
+                <span class="status ${getParticipantStatusClass(participant)}">
+                    ${getParticipantStatusText(participant)}
                 </span>
             </td>
             <td>
@@ -3168,6 +3216,11 @@ function updateParticipantsTable() {
             </td>
             <td>
                 <div class="action-buttons">
+                    ${participant.status === 'weight-submitted' ? 
+                        `<button type="button" class="btn btn--sm btn--success" onclick="approveWeight(${participant.id})" title="Утвердить вес и начать челлендж">
+                            ✅ Утвердить вес
+                        </button>` : ''
+                    }
                     <button type="button" class="btn btn--sm btn--outline" onclick="switchToUser('${participant.username}')" title="Переключиться в личный кабинет">
                         👤 Переключиться
                     </button>
@@ -3205,6 +3258,41 @@ function getActivityScoreClass(score) {
     if (score >= 80) return 'activity-high';
     if (score >= 50) return 'activity-medium';
     return 'activity-low';
+}
+
+// Get participant status class for styling
+function getParticipantStatusClass(participant) {
+    if (participant.status === 'weight-submitted') return 'status--warning';
+    if (participant.status === 'approved') return 'status--success';
+    if (participant.status === 'pending') return 'status--info';
+    return 'status--info';
+}
+
+// Get participant status text
+function getParticipantStatusText(participant) {
+    if (participant.status === 'weight-submitted') return 'Ожидает утверждения веса';
+    if (participant.status === 'approved') return 'Активен';
+    if (participant.status === 'pending') return 'Ожидает утверждения';
+    return 'Неизвестно';
+}
+
+// Approve participant's weight and start their challenge
+function approveWeight(userId) {
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+    
+    // Update user status
+    user.status = 'approved';
+    user.challengeApprovedAt = new Date().toISOString();
+    
+    // Save data
+    saveData();
+    
+    // Update admin table
+    updateParticipantsTable();
+    
+    // Show success message
+    showAdminNotification(`Вес участника ${user.username} утвержден! Челлендж начался.`);
 }
 
 function updateOverallChart() {

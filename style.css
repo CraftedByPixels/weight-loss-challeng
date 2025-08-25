@@ -556,6 +556,26 @@ pre code {
   color: var(--color-slate-500);
 }
 
+/* Weight Input Form Styles */
+.weight-input-section {
+  text-align: center;
+}
+
+.weight-input-description {
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-16);
+  font-size: var(--font-size-sm);
+}
+
+.weight-form {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.weight-form .form-group {
+  text-align: left;
+}
+
 /* Form elements */
 .form-control {
   display: block;
