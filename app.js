@@ -2391,6 +2391,16 @@ function handleAddWeight(e) {
         const isFirstMeasurement = weighIns.filter(w => w.userId === currentUser.id).length === 0;
         const needsApproval = !currentUser.initialWeight || currentUser.status === 'pending';
         
+        // Debug logging
+        console.log('🔍 Weight submission debug:', {
+            username: currentUser.username,
+            isFirstMeasurement,
+            needsApproval,
+            currentStatus: currentUser.status,
+            hasInitialWeight: !!currentUser.initialWeight,
+            existingWeighIns: weighIns.filter(w => w.userId === currentUser.id).length
+        });
+        
         if (isFirstMeasurement && needsApproval) {
             // This is the first weight - set it as initial and send for approval
             currentUser.initialWeight = weight;
@@ -3134,6 +3144,18 @@ function updateParticipantsTable() {
     // Get all non-admin users (new logic: show all registered participants)
     const participants = users.filter(u => !u.isAdmin);
     
+    // Debug logging
+    console.log('🔍 updateParticipantsTable debug:', {
+        totalUsers: users.length,
+        nonAdminUsers: participants.length,
+        participants: participants.map(u => ({
+            username: u.username,
+            status: u.status,
+            initialWeight: u.initialWeight,
+            createdAt: u.createdAt
+        }))
+    });
+    
     const tbody = document.getElementById('participants-table');
     tbody.innerHTML = '';
     
@@ -3296,6 +3318,13 @@ function getParticipantStatusClass(participant) {
 
 // Get participant status text
 function getParticipantStatusText(participant) {
+    // Debug logging
+    console.log('🔍 getParticipantStatusText debug:', {
+        username: participant.username,
+        status: participant.status,
+        initialWeight: participant.initialWeight
+    });
+    
     if (participant.status === 'weight-submitted') return 'Ожидает утверждения веса';
     if (participant.status === 'approved') return 'Активен';
     if (participant.status === 'pending') return 'Ожидает утверждения';
